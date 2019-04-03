@@ -1,7 +1,8 @@
 """
-    hessian_estimator_example.py - Hessian Matrix Estimator Example
+    pyhessian_example.py - Hessian Matrix Estimator Example for a Simple 
+    TensorFlow Model.
  
-    Copyright (c) 1996-2016 by Geir K. Nilsen (geir.kjetil.nilsen@gmail.com)
+    Copyright (c) 2018-2019 by Geir K. Nilsen (geir.kjetil.nilsen@gmail.com)
     and the University of Bergen.
  
     This program is free software; you can redistribute it and/or modify
@@ -22,8 +23,6 @@
 import tensorflow as tf
 import numpy as np
 from pyhessian import HessianEstimator
-import pytictoc
-TicToc = pytictoc.TicToc()
 
 # Model architecture; number of neurons, layer-wise.
 # e.g. Multinomial Logistic Regression
@@ -37,8 +36,8 @@ b = tf.Variable(tf.random.normal((layers[1], )), 'float32')
 params = [W, b]
 
 # Input-output variables
-X = tf.placeholder(dtype='float32', shape=(None, layers[0]), name="X-data")
-y = tf.placeholder(dtype='float32', shape=(None, layers[1]), name="y-data")
+X = tf.placeholder(dtype='float32', shape=(None, layers[0]))
+y = tf.placeholder(dtype='float32', shape=(None, layers[1]))
 
 # Model function
 def model_fun(X, params):
@@ -97,15 +96,8 @@ Hv = sess.run(Hv_op, feed_dict={X:[X_train[0]],
 H = sess.run(H_op, feed_dict={X:X_train, y:y_train})
 
 # Evaluate mini-batch Hessian matrix
-N = 64000
-batch_size=N
-X_train = np.random.normal(size=(N, layers[0]))
-y_train = np.random.normal(size=(N, layers[1]))
-
-TicToc.tic()
 H = sess.run(H_op, feed_dict={X:X_train[:batch_size], 
                               y:y_train[:batch_size]})
-TicToc.toc()
 
 # Evaluate single example Hessian matrix
 H = sess.run(H_op, feed_dict={X:[X_train[0]], 
@@ -114,21 +106,19 @@ H = sess.run(H_op, feed_dict={X:[X_train[0]],
 # Evaluate full OPG matrix
 G = np.zeros(hest.P, hest.P)
 B = int(N/batch_size)
-TicToc.tic()
 for b in range(B):
     G = G + sess.run(G_op, feed_dict={X:X_train[b*batch_size: \
                                                 (b+1)*batch_size], 
                                       y:y_train[b*batch_size: \
                                                 (b+1)*batch_size]})
 G = G / B
-TicToc.toc()
 
 # Evaluate mini-batch OPG matrix
 G = sess.run(G_op, feed_dict={X:X_train[:batch_size], 
                               y:y_train[:batch_size]})
 
-# Evaluate single example Hessian OPG approximation matrix (must re-init HessianEstimator 
-# with batch_size=1)
+# Evaluate single example Hessian OPG approximation matrix 
+# (must re-init HessianEstimator # with batch_size=1)
 batch_size = 1 
 hest = HessianEstimator(layers, cost_fun, cost, model_fun, params, 
                         X, y, batch_size)

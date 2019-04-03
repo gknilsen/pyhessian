@@ -1,7 +1,7 @@
 """
-    hessian_estimator.py - Hessian Matrix Estimator
+    pyhessian.py - Hessian Matrix Estimator
  
-    Copyright (c) 1996-2016 by Geir K. Nilsen (geir.kjetil.nilsen@gmail.com)
+    Copyright (c) 2018-2019 by Geir K. Nilsen (geir.kjetil.nilsen@gmail.com)
     and the University of Bergen.
  
     This program is free software; you can redistribute it and/or modify
@@ -33,19 +33,22 @@ class HessianEstimator(object):
         p: Total number of model parameters (int)
         X: Model input (tensor)
         y: Model output (tensor)
-        batch_size: Batch size used to estimate Hessian OPG approximation   
+        batch_size: Batch size used to estimate Hessian OPG approximatio
     
     """
-    def __init__(self, layers, cost_fun, cost, model_fun, params, X, y, batch_size):
+    def __init__(self, layers, cost_fun, cost, model_fun, params, X, y, 
+                 batch_size):
         """
         Args:
-            layers: Model architecture, number of neurons per layer (list of ints)
+            layers: Model architecture, number of neurons per layer 
+                    (list of ints)
             cost_fun(y, yhat_logits, params): Cost function (function)
                 Args:
                     y: Labels (tensor)
                     yhat_logits: Model output in logits (tensor)
                     params: List of model parameter(s) \
-                            (List of tensor(s)) [Can be used for regularization \
+                            (List of tensor(s)) [Can be used for 
+                                                 regularization
                                                  purposes]        
                 Returns:            
                     cost: Cost function output (tensor)        
@@ -62,8 +65,8 @@ class HessianEstimator(object):
             params: List of model parameters (list of tensor(s))
             X: Model input (tensor)
             y: Model output (tensor)
-            batch_size: Batch size used to estimate Hessian OPG approximation (
-                        int)
+            batch_size: Batch size used to estimate Hessian OPG 
+                        approximation (int)
         """
         self.layers = layers
         self.cost_fun = cost_fun
@@ -86,47 +89,13 @@ class HessianEstimator(object):
         Returns:
             A flattened 1D tensor
         """
-        weights = tf.concat([tf.reshape(params[l], 
-                                        shape=(self.layers[l]*self.layers[l+1],)) 
-                             for l in range(len(self.layers)-1)],axis=0)
-        biases = tf.concat([params[l+len(self.layers)-1] 
-                            for l in range(len(self.layers)-1)],axis=0)        
-        params_flat = tf.concat([weights, biases], axis=0)
-        return params_flat
-
-    def flatten_v2(self, params):
-        return tf.concat([tf.reshape(params[l], [-1]) for l in range(len(self.layers))], axis=0)
-
-    def unflatten(self, params_flat):
-        """
-        Unflattens the 1D tensor into a list of tensors. Inverse of flatten(params), \
-        e.g. unflatten(flatten(params)) = params.
-        
-        Args:
-            params_flat: The model parameters as a flat 1D tensor
-            
-        Returns:
-            params: A list of model parameters (List of tensor(s))
-        """
-        winds = np.cumsum(np.concatenate([[0], 
-                          np.multiply(np.roll(self.layers,-1)[:-1], 
-                                              self.layers[:-1])]))
-        weights = [tf.reshape(params_flat[winds[l]:winds[l+1]], 
-                              shape=(self.layers[l],
-                                     self.layers[l+1])) 
-                   for l in range(len(self.layers)-1)]
-        binds = np.concatenate([[winds[-1]], winds[-1]+ \
-                                             np.cumsum(self.layers[1:])])
-        biases = [tf.reshape(params_flat[binds[l]:binds[l+1]], 
-                             shape=(self.layers[l+1],)) 
-                  for l in range(len(self.layers)-1)]
-        return weights+biases
-
+        return tf.concat([tf.reshape(params[l], [-1]) 
+                          for l in range(len(self.layers))], axis=0)
 
     def get_Hv_op(self, v):
         """ 
-        Implements a Hessian vector product estimator Hv op defined as the matrix \
-        multiplication of the Hessian matrix H with the vector v.
+        Implements a Hessian vector product estimator Hv op defined as the 
+        matrix multiplication of the Hessian matrix H with the vector v.
     
         Args:      
             v: Vector to multiply with Hessian (tensor)
@@ -144,8 +113,8 @@ class HessianEstimator(object):
 
     def get_H_op(self):
         """ 
-        Implements a full Hessian estimator op by forming p Hessian vector products \
-        using HessianEstimator.get_Hv_op(v) for all v's in R^p
+        Implements a full Hessian estimator op by forming p Hessian vector 
+        products using HessianEstimator.get_Hv_op(v) for all v's in R^p
         
         Args:
             None
@@ -160,8 +129,8 @@ class HessianEstimator(object):
     
     def get_G_op(self):
         """ 
-        Implements a Hessian matrix OPG approximation op by a per-example cost
-        Jacobian matrix product
+        Implements a Hessian matrix OPG approximation op by a per-example 
+        cost Jacobian matrix product
      
         Args:
             None
@@ -169,12 +138,6 @@ class HessianEstimator(object):
         Returns:
             G_op: Hessian matrix OPG approximation op (tensor)
         """
-        """
-        ex_params_flat = [tf.identity(self.flatten(self.params)) \
-                          for ex in range(self.batch_size)]
-        ex_params = [self.unflatten(ex_params_flat[ex]) \
-                     for ex in range(self.batch_size)]
-        """                
         ex_params = [[tf.identity(self.params[l]) \
                       for l in range(len(self.layers))] \
                      for ex in range(self.batch_size)]      
