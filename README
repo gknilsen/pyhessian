@@ -1,0 +1,52 @@
+** hessian_estimator-0.1
+
+This package `hessian_estimator' contains the following components:
+
+   hessian_estimator.py
+      A python3 module to estimate Hessian matrices using TensorFlow
+      (https://www.tensorflow.org) and NumPy (http://www.numpy.org)
+      
+   hessian_estimator_example.py
+      An example showing how to apply HessianEstimator on
+      a simple TensorFlow model
+
+hessian_estimator is written in Python3 and depends on the TensorFlow and
+NumPy libraries.
+
+
+hessian_estimator
+~~~~
+hessian_estimator is a module used to estimate Hessian matrices in TensorFlow
+models. See the accompagnying paper "Efficient Computation of Hessian Matrices
+in TensorFlow" found at: http://arXive...
+
+Where to get
+~~~~~~~~~~~~
+By GIT (development):
+	https://github.com/alphanumerics/hessian_estimator
+
+Author
+~~~~~~
+Author: Geir K. Nilsen <geir.kjetil.nilsen@gmail.com>
+My home page: http://octovoid.com
+
+Other people have contributed to hessian_estimator theory development, see the 
+THANKS file.
+
+License
+~~~~~~~
+Copyright (c) 2019 by Geir K. Nilsen (lav@yars.free.net) and 
+the University of Bergen.
+
+hessian_estimator is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with hessian_estimator.  If not, see <http://www.gnu.org/licenses/>.
