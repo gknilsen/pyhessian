@@ -1,7 +1,7 @@
 """
-    pyhessian_example.py - Hessian Matrix Estimator Example for a Simple 
-    TensorFlow Model.
- 
+    pyhessian_example.py - pyhessian Usage Example for a Feed-Forward
+    Neural Network model.
+     
     Copyright (c) 2018-2019 by Geir K. Nilsen (geir.kjetil.nilsen@gmail.com)
     and the University of Bergen.
  
@@ -25,23 +25,32 @@ import numpy as np
 from pyhessian import HessianEstimator
 
 # Model architecture; number of neurons, layer-wise.
-# e.g. Multinomial Logistic Regression
-layers = [64, 128]
+# e.g. feed-forward neural network
+T1, T2, T3, T4 = 128, 64, 64, 32
+layers = [T1, T2, T3, T4]
 
 # Initialize random dummy weights & biases (no training, just for example)
-W = tf.Variable(tf.random.normal((layers[0], layers[1])), 'float32')
-b = tf.Variable(tf.random.normal((layers[1], )), 'float32')
+W1 = tf.Variable(tf.random.normal((T1, T2)), 'float32')
+W2 = tf.Variable(tf.random.normal((T2, T3)), 'float32')
+W3 = tf.Variable(tf.random.normal((T3, T4)), 'float32')
+
+b2 = tf.Variable(tf.random.normal((T2, )), 'float32')
+b3 = tf.Variable(tf.random.normal((T3, )), 'float32')
+b4 = tf.Variable(tf.random.normal((T4, )), 'float32')
 
 # Stack weights layer-wise first, then biases layer-wise after
-params = [W, b]
+params = [W1, W2, W3, b2, b3, b4]
 
 # Input-output variables
-X = tf.placeholder(dtype='float32', shape=(None, layers[0]))
-y = tf.placeholder(dtype='float32', shape=(None, layers[1]))
+X = tf.placeholder(dtype='float32', shape=(None, T1))
+y = tf.placeholder(dtype='float32', shape=(None, T4))
 
 # Model function
 def model_fun(X, params):
-    return tf.add(tf.matmul(X, params[0]), params[1])
+    l2 = tf.nn.softplus(tf.add(tf.matmul(X, params[0]), params[3]))
+    l3 = tf.nn.softplus(tf.add(tf.matmul(l2, params[1]), params[4]))
+    l4 = tf.add(tf.matmul(l3, params[2]), params[5])
+    return l4
         
 # Model output (logits)
 yhat_logits = model_fun(X, params)
@@ -78,8 +87,8 @@ sess.run(init)
 
 # Define dummy training data, N examples
 N = 1000
-X_train = np.random.normal(size=(N, layers[0]))
-y_train = np.random.normal(size=(N, layers[1]))
+X_train = np.random.normal(size=(N, T1))
+y_train = np.random.normal(size=(N, T4))
 
 # Evaluate first column of full Hessian matrix
 Hv = sess.run(Hv_op, feed_dict={X:X_train, y:y_train})
@@ -104,7 +113,7 @@ H = sess.run(H_op, feed_dict={X:[X_train[0]],
                               y:[y_train[0]]})
 
 # Evaluate full OPG matrix
-G = np.zeros(hest.P, hest.P)
+G = np.zeros((hest.P, hest.P), dtype='float32')
 B = int(N/batch_size)
 for b in range(B):
     G = G + sess.run(G_op, feed_dict={X:X_train[b*batch_size: \
