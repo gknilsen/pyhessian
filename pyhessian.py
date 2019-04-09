@@ -25,7 +25,6 @@ class HessianEstimator(object):
     """ Implements a Hessian matrix estimator
        
     Attributes:
-        layers: Model architecture, number of neurons per layer (list of ints)
         cost_fun: Cost function (function)
         cost: Cost function output (tensor)
         model_fun: Model function (function)
@@ -36,12 +35,10 @@ class HessianEstimator(object):
         batch_size: Batch size used to estimate Hessian OPG approximation
     
     """
-    def __init__(self, layers, cost_fun, cost, model_fun, params, X, y, 
+    def __init__(self, cost_fun, cost, model_fun, params, X, y, 
                  batch_size):
         """
         Args:
-            layers: Model architecture, number of neurons per layer 
-                    (list of ints)
             cost_fun(y, yhat_logits, params): Cost function (function)
                 Args:
                     y: Labels (tensor)
@@ -68,7 +65,6 @@ class HessianEstimator(object):
             batch_size: Batch size used to estimate Hessian OPG 
                         approximation (int)
         """
-        self.layers = layers
         self.cost_fun = cost_fun
         self.cost = cost
         self.model_fun = model_fun
