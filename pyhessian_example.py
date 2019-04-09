@@ -27,7 +27,6 @@ from pyhessian import HessianEstimator
 # Model architecture; number of neurons, layer-wise.
 # e.g. feed-forward neural network
 T1, T2, T3, T4 = 128, 64, 64, 32
-layers = [T1, T2, T3, T4]
 
 # Initialize random dummy weights & biases (no training, just for example)
 W1 = tf.Variable(tf.random.normal((T1, T2)), 'float32')
@@ -39,7 +38,7 @@ b3 = tf.Variable(tf.random.normal((T3, )), 'float32')
 b4 = tf.Variable(tf.random.normal((T4, )), 'float32')
 
 # Stack weights layer-wise first, then biases layer-wise after
-params = [W1, W2, W3, b2, b3, b4]
+params = [W1, b2, W2, b3, W3, b4]
 
 # Input-output variables
 X = tf.placeholder(dtype='float32', shape=(None, T1))
@@ -47,10 +46,10 @@ y = tf.placeholder(dtype='float32', shape=(None, T4))
 
 # Model function
 def model_fun(X, params):
-    l2 = tf.nn.softplus(tf.add(tf.matmul(X, params[0]), params[3]))
-    l3 = tf.nn.softplus(tf.add(tf.matmul(l2, params[1]), params[4]))
-    l4 = tf.add(tf.matmul(l3, params[2]), params[5])
-    return l4
+    l_2 = tf.nn.softplus(tf.add(tf.matmul(X, params[0]), params[1]))
+    l_3 = tf.nn.softplus(tf.add(tf.matmul(l_2, params[2]), params[3]))
+    l_4 = tf.add(tf.matmul(l_3, params[4]), params[5])
+    return l_4
         
 # Model output (logits)
 yhat_logits = model_fun(X, params)
@@ -68,7 +67,7 @@ cost = cost_fun(y, yhat_logits, params)
 batch_size = 100
 
 # Initialize HessianEstimator object
-hest = HessianEstimator(layers, cost_fun, cost, model_fun, params, 
+hest = HessianEstimator(cost_fun, cost, model_fun, params, 
                         X, y, batch_size)
 
 # First Hessian column op
@@ -129,7 +128,7 @@ G = sess.run(G_op, feed_dict={X:X_train[:batch_size],
 # Evaluate single example Hessian OPG approximation matrix 
 # (must re-init HessianEstimator # with batch_size=1)
 batch_size = 1 
-hest = HessianEstimator(layers, cost_fun, cost, model_fun, params, 
+hest = HessianEstimator(cost_fun, cost, model_fun, params, 
                         X, y, batch_size)
 G_op = hest.get_G_op()
 G = sess.run(G_op, feed_dict={X:[X_train[0]], 
