@@ -37,7 +37,7 @@ b2 = tf.Variable(tf.random.normal((T2, )), 'float32')
 b3 = tf.Variable(tf.random.normal((T3, )), 'float32')
 b4 = tf.Variable(tf.random.normal((T4, )), 'float32')
 
-# Stack weights layer-wise first, then biases layer-wise after
+# Stack weights and biases layer-wise
 params = [W1, b2, W2, b3, W3, b4]
 
 # Input-output variables
