@@ -32,11 +32,11 @@ class HessianEstimator(object):
         P: Total number of model parameters (int)
         X: Model input (tensor)
         y: Model output (tensor)
-        batch_size: Batch size used to estimate Hessian OPG approximation
+        batch_size_G: Batch size used to estimate Hessian OPG approximation
     
     """
     def __init__(self, cost_fun, cost, model_fun, params, X, y, 
-                 batch_size):
+                 batch_size_G):
         """
         Args:
             cost_fun(y, yhat_logits, params): Cost function (function)
@@ -62,8 +62,8 @@ class HessianEstimator(object):
             params: List of model parameters (list of tensor(s))
             X: Model input (tensor)
             y: Model output (tensor)
-            batch_size: Batch size used to estimate Hessian OPG 
-                        approximation (int)
+            batch_size_G: Batch size used to estimate Hessian OPG 
+                          approximation (int)
         """
         self.cost_fun = cost_fun
         self.cost = cost
@@ -72,7 +72,7 @@ class HessianEstimator(object):
         self.P = self.flatten(self.params).get_shape().as_list()[0]
         self.X = X
         self.y = y
-        self.batch_size = batch_size
+        self.batch_size_G = batch_size_G
 
     def flatten(self, params):
         """
@@ -136,10 +136,10 @@ class HessianEstimator(object):
                        
         ex_params = [[tf.identity(_params) \
                       for _params in self.params] \
-                     for ex in range(self.batch_size)]      
+                     for ex in range(self.batch_size_G)]      
         
-        ex_X = tf.split(self.X, self.batch_size)
-        ex_y = tf.split(self.y, self.batch_size)    
+        ex_X = tf.split(self.X, self.batch_size_G)
+        ex_y = tf.split(self.y, self.batch_size_G)    
         ex_yhat_logits = [self.model_fun(_X, _params) \
                           for _X, _params in zip(ex_X, 
                                                  ex_params)]
@@ -149,8 +149,8 @@ class HessianEstimator(object):
                                                         ex_params)]
         ex_grads = tf.stack([self.flatten(tf.gradients(ex_cost[ex], 
                                                        ex_params[ex])) \
-                             for ex in range(self.batch_size)])
+                             for ex in range(self.batch_size_G)])
         G_op = tf.matmul(tf.transpose(ex_grads), 
-                         ex_grads) / self.batch_size
+                         ex_grads) / self.batch_size_G
         return G_op
                      

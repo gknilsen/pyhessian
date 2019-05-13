@@ -64,11 +64,11 @@ def cost_fun(y, yhat_logits, params):
 cost = cost_fun(y, yhat_logits, params)
 
 # Batch size for OPG estimator
-batch_size = 100
+batch_size_G = 100
 
 # Initialize HessianEstimator object
 hest = HessianEstimator(cost_fun, cost, model_fun, params, 
-                        X, y, batch_size)
+                        X, y, batch_size_G)
 
 # First Hessian column op
 Hv_op = hest.get_Hv_op(tf.eye(hest.P, 1))
@@ -101,7 +101,14 @@ Hv = sess.run(Hv_op, feed_dict={X:[X_train[0]],
                                 y:[y_train[0]]})
 
 # Evaluate full Hessian matrix
-H = sess.run(H_op, feed_dict={X:X_train, y:y_train})
+H = np.zeros((hest.P, hest.P), dtype='float32')
+B = int(N/batch_size)
+for b in range(B):
+    H = H + sess.run(H_op, feed_dict={X:X_train[b*batch_size: \
+                                                (b+1)*batch_size], 
+                                      y:y_train[b*batch_size: \
+                                                (b+1)*batch_size]})
+H = H / B
 
 # Evaluate mini-batch Hessian matrix
 H = sess.run(H_op, feed_dict={X:X_train[:batch_size], 
@@ -126,7 +133,7 @@ G = sess.run(G_op, feed_dict={X:X_train[:batch_size],
                               y:y_train[:batch_size]})
 
 # Evaluate single example Hessian OPG approximation matrix 
-# (must re-init HessianEstimator # with batch_size=1)
+# (must re-init HessianEstimator with batch_size=1)
 batch_size = 1 
 hest = HessianEstimator(cost_fun, cost, model_fun, params, 
                         X, y, batch_size)
