@@ -18,7 +18,7 @@ pyhessian
 ~~~~~~~~~
 pyhessian is a module used to estimate Hessian matrices of TensorFlow
 models. See the accompagnying paper "Efficient Computation of Hessian Matrices
-in TensorFlow" found at: http://arXive...
+in TensorFlow" found at: http://arxiv.org/abs/1905.05559
 
 Where to get
 ~~~~~~~~~~~~
