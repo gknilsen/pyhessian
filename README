@@ -8,7 +8,7 @@ This package `pyhessian' contains the following components:
       
    pyhessian_example.py
       An example showing how to apply HessianEstimator on
-      a simple TensorFlow model
+      a feed-forward neural network TensorFlow model
 
 pyhessian is written in Python3 and depends on the TensorFlow and
 NumPy libraries.
