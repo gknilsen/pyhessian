@@ -119,6 +119,11 @@ H = sess.run(H_op, feed_dict={X:X_train[:batch_size_H],
 H = sess.run(H_op, feed_dict={X:[X_train[0]], 
                               y:[y_train[0]]})
 
+# For very large models where the full Hessian matrix is too large to fit in memory, 
+# an alternative is to use the module pydeepdelta, see https://github.com/gknilsen/pyhessian
+# The pydeepdelta module is described in the paper "On the Delta Method for Uncertainty Approximation in Deep Learning" 
+# found at https://arxiv.org/abs/1912.00832
+
 # Evaluate full OPG matrix
 G = np.zeros((hest.P, hest.P), dtype='float32')
 B = int(N/batch_size_G)
