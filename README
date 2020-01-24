@@ -20,9 +20,9 @@ pyhessian is a module used to estimate Hessian matrices of TensorFlow
 models. See the accompagnying paper "Efficient Computation of Hessian Matrices
 in TensorFlow" found at: http://arxiv.org/abs/1905.05559
 
-For very large models where the full Hessian matrix is too large to fit in memory, 
-an alternative is to use the module pydeepdelta, see https://github.com/gknilsen/pydeepdelta
-The pydeepdelta module is described in the paper "On the Delta Method for Uncertainty Approximation in Deep Learning" 
+For models where the full Hessian matrix is too large to fit in memory, 
+an alternative can be to use the approximate eigendecomposition of the Hessian matrix. See the module pydeepdelta
+(https://github.com/gknilsen/pydeepdelta) described in the paper "On the Delta Method for Uncertainty Approximation in Deep Learning" 
 found at https://arxiv.org/abs/1912.00832
 
 Where to get
