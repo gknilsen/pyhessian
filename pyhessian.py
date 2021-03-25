@@ -1,9 +1,12 @@
 """
     pyhessian.py - Hessian Matrix Estimator
+
+    See the accompagnying paper "Efficient Computation of Hessian Matrices
+    in TensorFlow" found at: http://arxiv.org/abs/1905.05559
  
-    Copyright (c) 2018-2019 by Geir K. Nilsen (geir.kjetil.nilsen@gmail.com)
+    Copyright (c) 2018-2021 by Geir K. Nilsen (geir.kjetil.nilsen@gmail.com)
     and the University of Bergen.
- 
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 3 of the License, or
@@ -18,7 +21,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-import tensorflow as tf
+
+import tensorflow.compat.v1 as tf
+import os
+os.environ['TF_DETERMINISTIC_OPS'] = '1'
+tf.disable_v2_behavior()
 import numpy as np
 
 class HessianEstimator(object):
@@ -153,4 +160,33 @@ class HessianEstimator(object):
         G_op = tf.matmul(tf.transpose(ex_grads), 
                          ex_grads) / self.batch_size_G
         return G_op
+
+    def get_J_op(self):
+        """ 
+        Implements an op for the Jacobian of the the cost function. 
+        Args:
+            None
+        
+        Returns:
+            J_op: Jacobian matrix of the cost function (tensor)
+        """
+                       
+        ex_params = [[tf.identity(_params) \
+                      for _params in self.params] \
+                     for ex in range(self.batch_size_G)]      
+        
+        ex_X = tf.split(self.X, self.batch_size_G)
+        ex_y = tf.split(self.y, self.batch_size_G)    
+        ex_yhat_logits = [self.model_fun(_X, _params) \
+                          for _X, _params in zip(ex_X, 
+                                                 ex_params)]
+        ex_cost = [self.cost_fun(_y, _yhat_logits, _params) \
+                   for _y, _yhat_logits, _params in zip(ex_y, 
+                                                        ex_yhat_logits,
+                                                        ex_params)]
+        ex_grads = tf.stack([self.flatten(tf.gradients(ex_cost[ex], 
+                                                       ex_params[ex])) \
+                             for ex in range(self.batch_size_G)])
+        J_op = ex_grads / self.batch_size_G
+        return J_op
                      
