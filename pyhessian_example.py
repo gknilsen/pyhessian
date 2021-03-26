@@ -2,7 +2,7 @@
     pyhessian_example.py - pyhessian Usage Example for a Feed-Forward
     Neural Network model.
      
-    Copyright (c) 2018-2019 by Geir K. Nilsen (geir.kjetil.nilsen@gmail.com)
+    Copyright (c) 2018-2021 by Geir K. Nilsen (geir.kjetil.nilsen@gmail.com)
     and the University of Bergen.
  
     This program is free software; you can redistribute it and/or modify
