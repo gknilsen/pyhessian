@@ -8,7 +8,7 @@ This package `pyhessian' contains the following components:
       
    pyhessian_example.py
       An example showing how to apply HessianEstimator on
-      a simple TensorFlow model
+      a feed-forward neural network TensorFlow model
 
 pyhessian is written in Python3 and depends on the TensorFlow and
 NumPy libraries.
@@ -18,7 +18,7 @@ pyhessian
 ~~~~~~~~~
 pyhessian is a module used to estimate Hessian matrices of TensorFlow
 models. See the accompagnying paper "Efficient Computation of Hessian Matrices
-in TensorFlow" found at: http://arXive...
+in TensorFlow" found at: http://arxiv.org/abs/1905.05559
 
 Where to get
 ~~~~~~~~~~~~
@@ -35,7 +35,7 @@ THANKS file.
 
 License
 ~~~~~~~
-Copyright (c) 2019 by Geir K. Nilsen (geir.kjetil.nilsen@gmail.com) and 
+Copyright (c) 2018-2021 by Geir K. Nilsen (geir.kjetil.nilsen@gmail.com) and 
 the University of Bergen.
 
 pyhessian is free software: you can redistribute it and/or modify

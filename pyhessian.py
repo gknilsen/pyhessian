@@ -187,6 +187,6 @@ class HessianEstimator(object):
         ex_grads = tf.stack([self.flatten(tf.gradients(ex_cost[ex], 
                                                        ex_params[ex])) \
                              for ex in range(self.batch_size_G)])
-        J_op = ex_grads / self.batch_size_G
+        J_op = ex_grads
         return J_op
                      

@@ -29,7 +29,7 @@ from pyhessian import HessianEstimator
 
 # Model architecture; number of neurons, layer-wise.
 # e.g. feed-forward neural network
-T1, T2, T3, T4 = 128, 64, 64, 32
+T1, T2, T3, T4 = 8, 4, 4, 2
 
 # Initialize random dummy weights & biases (no training, just for example)
 W1 = tf.Variable(tf.random.normal((T1, T2)), 'float32')
@@ -68,9 +68,10 @@ cost = cost_fun(y, yhat_logits, params)
 
 # Batch size for OPG estimator
 batch_size_G = 100
+# Batch size for Hessian estimator
 batch_size_H = 1000
 
-# Initialize HessianEstimator object
+# # Initialize HessianEstimator object
 hest = HessianEstimator(cost_fun, cost, model_fun, params, 
                         X, y, batch_size_G)
 
@@ -144,3 +145,62 @@ hest = HessianEstimator(cost_fun, cost, model_fun, params,
 G_op = hest.get_G_op()
 G = sess.run(G_op, feed_dict={X:[X_train[0]], 
                               y:[y_train[0]]})
+
+# For very large models where the full Hessian matrix is too large to fit in memory, 
+# an alternative is to use approximate eigendecompositons:
+
+# Compute eigendecomposition of H 
+from scipy.sparse.linalg import LinearOperator
+from scipy.sparse.linalg import eigsh
+K = 10
+hest = HessianEstimator(cost_fun, cost, model_fun, params, 
+                        X, y, batch_size_G)
+_v = tf.placeholder(shape=(hest.P,), dtype='float32')
+Hv_op = hest.get_Hv_op(_v)
+def Hv(v):
+    B = int(N/batch_size_H)
+    Hv = np.zeros((hest.P))
+    Bs = batch_size_H
+    for b in range(B):
+        Hv = Hv + sess.run(Hv_op, 
+                           feed_dict={X:X_train[b*Bs: \
+                                                (b+1)*Bs], 
+                                      y:y_train[b*Bs: \
+                                                (b+1)*Bs], 
+                                      _v:np.squeeze(v)})
+    Hv = Hv / B
+    return Hv
+H = LinearOperator((hest.P, hest.P), matvec=Hv, dtype='float32')
+L_H, Q_H = eigsh(H, k=K, which='LA')
+
+
+# Compute eigendecomposition of G
+from sklearn.decomposition import IncrementalPCA
+K = 10
+hest = HessianEstimator(cost_fun, cost, model_fun, params, 
+                        X, y, batch_size_G)
+_N = int(np.ceil(K / batch_size_G))
+
+if N % _N != 0:
+    raise Exception('N must be divisible by K/batch_size_G!')
+
+ipca = IncrementalPCA(n_components=K, batch_size=batch_size_G*_N, 
+                      copy=False)
+
+J_op = hest.get_J_op()
+
+J = np.zeros((batch_size_G*_N, hest.P), dtype='float32')
+B = int(N/batch_size_G)
+Bs = batch_size_G
+for b in range(B):
+    J[Bs*(b%_N):Bs*(b%_N+1),:] = sess.run(J_op, 
+                                          feed_dict={X: X_train[b*Bs:\
+                                                                (b+1)*Bs], 
+                                                     y: y_train[b*Bs:\
+                                                                (b+1)*Bs]})
+    if (b+1) % _N == 0:
+        ipca.partial_fit(J)
+
+L_G, Q_G = np.float32(ipca.singular_values_**2 / N),\
+           np.float32(ipca.components_.T)
+
